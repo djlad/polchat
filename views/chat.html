@@ -1,0 +1,77 @@
+<link href = "styles/chat.css" rel = "stylesheet" type="text/css"></link>
+<script src = "https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.1/handlebars.js"></script>
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+
+<script src="/javascript/chatLibrary.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+
+<a href = "logout">logout</a>
+
+<script>
+	var chatUi;
+	$(document).ready(function(){
+		chatUi = (function(){
+			return {
+				chatBubbleRight:Handlebars.compile($(".chatBubbleRightTemp").html()),
+				chatBubbleLeft:Handlebars.compile($(".chatBubbleLeftTemp").html()),
+				chatBox:Handlebars.compile($(".chatBoxTemp").html()),
+				chatObjects:{
+					
+				},
+				//classes
+				ChatObject:function(title,elementRef){
+					this.title = title;
+					this.opened = true;
+					this.index = $(".chatBoxes").length-1;
+					this.ref = elementRef;
+					this.addMessage = function(content,isLeft){
+						if(isLeft){
+							this.ref.find(".chatMessages").append(chatUi.chatBubbleLeft({content:content}));
+						}else{
+							this.ref.find(".chatMessages").append(chatUi.chatBubbleRight({content:content}));
+						}
+					}
+				},
+				
+				//methods
+				addChatBox: function(title,chatId){
+						element = $(".chatBoxes").append(this.chatBox({title:title}));
+						this.chatObjects[chatId] = new this.ChatObject(title,element);
+					},
+				addMessage: function(content,isLeft){
+					if(isLeft){
+						$(".chatBox").eq(0).find(".chatMessages").append(this.chatBubbleLeft({content:content}));
+					}else{
+						$(".chatBox").eq(0).find(".chatMessages").append(this.chatBubbleRight({content:content}));
+					}
+				}
+			}
+		})();
+	});
+	console.log("updated")
+</script>
+
+
+<script class = "chatBubbleRightTemp" type="text/x-handlebars-template">
+	<div class = "chatBubbleRight">{{content}}</div>
+</script>
+<script class = chatBubbleLeftTemp type="text/x-handlebars-template">
+	<div class = "chatBubbleLeft">{{content}}</div>
+</script>
+<script class = "chatBoxTemp" type="text/x-handlebars-template">
+	<div class = "chatBox">
+		<div class="chatTitle">{{title}}</div>
+		<div class="chatMessages">
+		
+		</div>
+		<textArea></textArea>
+	</div>
+</script>
+
+<div class = "chatBoxes">
+</div>
+
+
+<div class = "usersOnline">
+users online:
+</div>

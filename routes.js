@@ -2,7 +2,9 @@ console.log("routes loaded");
 
 var Account = require("./models/account.js");
 var Message = require("./models/message.js");
+var Match = require("./models/match.js")
 var url = require("url");
+
 
 module.exports = function(app,passport,io){
 	
@@ -29,18 +31,56 @@ module.exports = function(app,passport,io){
 		})
 	}
 
+	function lookForMatch(issue,username,res){
+		Match.findOne({issue:issue,found:"-"},function(er,match){
+			if(er)res.send("error");
+			if(match == null){
+				console.log("adding match");
+				addMatch(issue,username);
+				res.send("added match probably");
+			}else{
+				if(match.finder !== username){
+					console.log("match found for "+username);
+					match.found = username;
+					match.save(function(){
+						res.send(match);
+					})
+				}else{
+					res.send("no match yet")
+				}
+			}
+			
+		});
+	}
+
+	function addMatch(issue,username){
+		newMatch = new Match();
+		newMatch.issue = issue;
+		newMatch.finder = username;
+		newMatch.found = "-";
+		newMatch.save();
+	}
+
+	function updateMatch(finder,found){
+		Match.findOne({finder:finder},function(er,match){
+			match.found = found;
+			match.save();
+		});
+	}
+
 	function tellUserToCheckForMessages(user){
 		for(sock in user2Sock[user]){
 			io.sockets.connected[sock].emit('newMessage',"nm");
 		}
 	}
 
-	function sendMessage(to,from,content){
+	function sendMessage(to,from,content,issue){
 		newMessage = new Message();
 		newMessage.to = to;
 		newMessage.from = from;
 		newMessage.content = content;
 		newMessage.date = (new Date()).getTime();
+		newMessage.issue = issue
 		newMessage.save(function(){
 			tellUserToCheckForMessages(to);
 		});
@@ -74,8 +114,21 @@ module.exports = function(app,passport,io){
 
 	//main page
 	app.get("/user",function(req,res){
-		if(req.isAuthenticated())res.render("user",{username:req.user.id});
+		if(req.isAuthenticated())res.render("chat",{username:req.user.id});
 		else res.redirect("/login");
+	});
+
+	//get Matches working on it now
+	app.get("/getMatches",function(req,res){
+		Matches.find({finder:req.user.id});
+	})
+
+	//find match
+	app.get("/lookForMatch",function(req,res){	
+		urlGetData = url.parse(req.url,true).query;
+		console.log(req.user.id);
+		lookForMatch(urlGetData.issue,req.user.id,res);
+
 	});
 
 	//get messages
@@ -101,8 +154,9 @@ module.exports = function(app,passport,io){
 		var to = urlGetData.to;//req.body.to;
 		var from = req.user.id;
 		var content = urlGetData.content;//req.body.content;
+		var issue = urlGetData.issue;//issue
 		res.send(to + from + content);
-		sendMessage(to,from,content);
+		sendMessage(to,from,content,issue);
 	});
 
 	//adds a socket to chat object so server knows which socket is which username
@@ -131,6 +185,9 @@ module.exports = function(app,passport,io){
 		res.sendfile("./views/javascript/chatLibrary.js");
 	});
 
-
+	//css files
+	app.get("/styles/chat.css",function(req,res){
+		res.sendfile("./views/styles/chat.css");
+	})
 
 }

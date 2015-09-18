@@ -1,0 +1,102 @@
+.chatBox{
+	border: 1px solid black;
+	width: 200px;
+	height:250px;
+	bottom:0;
+	display:inline-block;
+	position:relative;
+
+}
+
+.chatTitle{
+	color:white;
+	background-color:#3f51bf;
+	border-radius-top-left:1em;
+	border-radius-top-right:1em;
+	text-align:center;
+	height:10%
+}
+
+.chatBox textArea{
+	width:100%;
+	height:30px;
+	outline:none;
+	resize:none;
+	position:absolute;
+	bottom:0;
+}
+
+.chatBox .chatMessages{
+	overflow-y:auto;
+	height:210px;
+	
+}
+
+.chatBubbleRight{
+	position:relative;
+	border:1px solid aqua;
+	background-color:aqua;
+	margin: 5%;
+	border-radius:5px;
+	width:90%;
+	word-wrap:break-word;
+	display:block;
+	margin-bottom:23px;
+}
+
+.chatBubbleRight:after{
+	content:"";
+	position:absolute;
+	bottom:-35px;
+	right:30px;
+	width:0px;
+	height:20px;
+	border-style:solid;
+	border-width:15px 15px 0;
+	border-color:aqua rgba(42, 142, 101, 0);
+	display:block;
+}
+
+.chatBubbleLeft{
+	position:relative;
+	border:1px solid #d3d3d3;
+	background-color:#d3d3d3;
+	margin: 5%;
+	border-radius:5px;
+	width:90%;
+	word-wrap:break-word;
+	display:block;
+	margin-bottom:23px;
+}
+
+
+
+
+.chatBubbleLeft:after{
+	content:"";
+	position:absolute;
+	bottom:-35px;
+	left:30px;
+	width:0px;
+	height:20px;
+	border-style:solid;
+	border-width:15px 15px 0;
+	border-color: #d3d3d3 rgba(42, 142, 101, 0);
+	display:block;
+}
+
+.chatBoxes{
+	position:fixed;
+	bottom:0;
+	width:100%;
+	height:250px;
+}
+
+.usersOnline{
+	height:100%;
+	width:200px;
+	position:fixed;
+	right:0;
+	bottom:0;
+	border:solid 1px black;
+}

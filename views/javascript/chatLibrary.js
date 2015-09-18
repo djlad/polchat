@@ -17,8 +17,8 @@ function ajaxRequest(method,url,callBack){
 }
 
 chat = (function makeChatObject(){
-	function sendMessage(to,content){
-		ajaxRequest("GET","sendMessage?to="+to+"&content="+content,function(response){
+	function sendMessage(to,content,issue){
+		ajaxRequest("GET","sendMessage?to="+to+"&content="+content+"&issue="+issue,function(response){
 			console.log(response.responseText);
 		});
 	}
