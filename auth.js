@@ -9,7 +9,7 @@ var bcrypt = require("bcrypt");
 
 passport.use(new passportLocal.Strategy(function(username,password,done){
 	Account.findOne({username:username},function(er,account){
-		if(account.validPassword(password))done(null,{id : username});
+		if(account !== null && account.validPassword(password))done(null,{id : username});
 		else done(null,null);
 	})
 
