@@ -120,7 +120,10 @@ module.exports = function(app,passport,io){
 
 	//get Matches working on it now
 	app.get("/getMatches",function(req,res){
-		Matches.find({finder:req.user.id});
+		Match.find({$or:[{finder:req.user.id},{found:req.user.id}]},function(matches){
+			res.send(matches);
+			console.log(matches);
+		});
 	})
 
 	//find match

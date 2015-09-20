@@ -48,11 +48,28 @@ chat = (function makeChatObject(){
 		});
 	}
 
+	function registerNewChatListener(){
+		ajaxRequest("GET","/newChatListener?socketid="+socket.id,function(){});
+	}
+	function getMatches(){
+		ajaxRequest("GET","/getMatches" ,function(matchesResponse){
+			console.log(matchesResponse);
+		});
+	}
+	function lookForMatch(issue,callBack){
+		ajaxRequest("GET","/lookForMatch?issue="+issue,function(matchesResponse){
+			console.log(matchesResponse);
+		});
+	}
+
 	chat = {
 		lastUpdateDate:(new Date).getTime() - 864000000,//now minus 10 days in ms
-		getAllMessages:getAllMessages,
-		sendMessage:sendMessage,
-		getConversation:getConversation
+		getAllMessages,
+		sendMessage,
+		getConversation,
+		registerNewChatListener,
+		getMatches,
+		lookForMatch
 	}
 	return chat;
 })()
