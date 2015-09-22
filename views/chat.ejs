@@ -15,6 +15,7 @@
 				chatBubbleRight:Handlebars.compile($(".chatBubbleRightTemp").html()),
 				chatBubbleLeft:Handlebars.compile($(".chatBubbleLeftTemp").html()),
 				chatBox:Handlebars.compile($(".chatBoxTemp").html()),
+				docMatchList:$(".usersOnline"),
 				chatObjects:{
 					
 				},
@@ -44,11 +45,21 @@
 					}else{
 						$(".chatBox").eq(0).find(".chatMessages").append(this.chatBubbleRight({content:content}));
 					}
+				},
+
+				displayMatches: function(){
+					chat.getMatches(function(matchResp){
+						matchResp = JSON.parse(matchResp.responseText);
+						for(i=0;i<matchResp.length;i++){
+							chatUi.docMatchList.append(matchResp[i].issue);
+						}
+					})
 				}
 			}
 		})();
 	});
 </script>
+
 
 
 <p>hello</p>
@@ -75,3 +86,5 @@
 <div class = "usersOnline">
 	hello
 </div>
+
+

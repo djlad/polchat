@@ -51,8 +51,9 @@ chat = (function makeChatObject(){
 	function registerNewChatListener(){
 		ajaxRequest("GET","/newChatListener?socketid="+socket.id,function(){});
 	}
-	function getMatches(){
+	function getMatches(callBack){
 		ajaxRequest("GET","/getMatches" ,function(matchesResponse){
+			callBack(matchesResponse);
 			console.log(matchesResponse);
 		});
 	}
