@@ -18,6 +18,8 @@ function ajaxRequest(method,url,callBack){
 
 chat = (function makeChatObject(){
 	function sendMessage(to,content,issue){
+		issue = typeof issue !== "undefined"?issue:"pm";
+
 		ajaxRequest("GET","sendMessage?to="+to+"&content="+content+"&issue="+issue,function(response){
 			console.log(response.responseText);
 		});

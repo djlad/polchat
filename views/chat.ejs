@@ -46,12 +46,23 @@
 						$(".chatBox").eq(0).find(".chatMessages").append(this.chatBubbleRight({content:content}));
 					}
 				},
+				matchToName: function(match){
+					switch(match.type){
+						case "pm":
+							return match.finder+match.found+"pm";
+						default:
+							return match._id;
+
+					}
+				}
+				,
 
 				displayMatches: function(){
 					chat.getMatches(function(matchResp){
 						matchResp = JSON.parse(matchResp.responseText);
 						for(i=0;i<matchResp.length;i++){
 							chatUi.docMatchList.append(matchResp[i].issue);
+							console.log(chatUi.matchToName(matchResp[i]));
 						}
 					})
 				}
