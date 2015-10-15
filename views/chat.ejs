@@ -47,7 +47,7 @@
 					}
 				},
 
-				displayMatches: function(){
+			handleMatches: function(){
 					chat.getMatches(function(matchResp){
 						matchResp = JSON.parse(matchResp.responseText);
 						for(i=0;i<matchResp.length;i++){
