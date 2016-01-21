@@ -44,6 +44,17 @@
 					}else{
 						$(".chatBox").eq(0).find(".chatMessages").append(this.chatBubbleRight({content:content}));
 					}
+				},
+				handleMatches: function(){
+					chat.getMatches(function(matches){
+						matches = JSON.parse(matches.responseText);
+						
+						for(var i = 0; i < matches.length; i++){
+							if(this.chatObjects[_id] == undefined)
+								this.addMessageBox(matches[i].issue,matches[i]._id);
+						}
+					})
+					console.log("matches handled")
 				}
 			}
 		})();

@@ -57,12 +57,14 @@
 				}
 				,
 
-			handleMatches: function(){
-					chat.getMatches(function(matchResp){
-						matchResp = JSON.parse(matchResp.responseText);
-						for(i=0;i<matchResp.length;i++){
-							chatUi.docMatchList.append(matchResp[i].issue);
-							console.log(chatUi.matchToName(matchResp[i]));
+				handleMatches: function(){
+					chat.getMatches(function(matches){
+						var matches = JSON.parse(matches.responseText);
+						var identifier;
+						for(var i = 0; i < matches.length; i++){
+							//identifier = matches[i].issue + "+" + username==matches[i].finder?matches[i].found:matches[i].finder;
+							if(chatUi.chatObjects[matches[i]._id] == undefined)
+								chatUi.addChatBox(matches[i].issue,matches[i]._id);
 						}
 					})
 				}
@@ -102,5 +104,4 @@
 <div class = "usersOnline">
 	hello
 </div>
-
 
