@@ -56,7 +56,6 @@ chat = (function makeChatObject(){
 	function getMatches(callBack){
 		ajaxRequest("GET","/getMatches" ,function(matchesResponse){
 			callBack(matchesResponse);
-			console.log(matchesResponse);
 		});
 	}
 	function lookForMatch(issue,callBack){

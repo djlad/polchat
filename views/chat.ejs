@@ -8,36 +8,106 @@
 <a href = "logout">logout</a>
 
 <script>
+	
+	
+	socket = io();
+	socket.on("newMessage",function(d){
+		//on new message update chat
+		chatUi.updateChat();
+	})
+	socket.on("connect",function(){
+		//add auto update
+		chat.registerNewChatListener();
+	});
+
+</script>
+
+<script>
+	//get username
+	username = "<%= username %>";
+
+
 	var chatUi;
+	var cObjs // alias for chatUi.chatObjects
+
 	$(document).ready(function(){
 		chatUi = (function(){
 			return {
 				chatBubbleRight:Handlebars.compile($(".chatBubbleRightTemp").html()),
 				chatBubbleLeft:Handlebars.compile($(".chatBubbleLeftTemp").html()),
 				chatBox:Handlebars.compile($(".chatBoxTemp").html()),
+				chatEntry:Handlebars.compile($(".chatEntry").html()),
+				userEntry:Handlebars.compile($(".userEntry").html()),
 				docMatchList:$(".usersOnline"),
 				chatObjects:{
 					
 				},
 				//classes
-				ChatObject:function(title,elementRef){
+				ChatObject:function(title,elementRef,issue,opponent){
 					this.title = title;
-					this.opened = true;
-					this.index = $(".chatBoxes").length-1;
+					this.opened = false;
+					this.index = $(".chatBoxes").length-1;//doesnt work possibly unneccesary
 					this.ref = elementRef;
+					this.messages = [];
+
+					this.issue = issue;
+					this.opponent = opponent;//check name conflicts
+
 					this.addMessage = function(content,isLeft){
 						if(isLeft){
 							this.ref.find(".chatMessages").append(chatUi.chatBubbleLeft({content:content}));
 						}else{
 							this.ref.find(".chatMessages").append(chatUi.chatBubbleRight({content:content}));
 						}
+					};
+					this.display = function(){
+						//display this chat box or close chat box
+						if(!this.opened){
+							console.log("openning");
+							var thisChatObject = this;
+							this.ref = chatUi.addChatBox(this.title);
+							this.opened = true;
+
+							var textArea = this.ref[0].getElementsByTagName("textarea")[0];
+							var tmpOpponent = this.opponent;
+							var tmpIssue = this.issue;
+
+							var messagesBox = this.ref[0].getElementsByClassName("chatMessages")[0];
+
+
+							textArea.onkeyup = function(e){
+								if(e.keyCode == 13){
+									e.preventDefault();
+									chat.sendMessage(tmpOpponent,textArea.value,tmpIssue);
+									thisChatObject.addMessage(textArea.value);//probably wasteful
+									messagesBox.scrollTop = messagesBox.scrollHeight;
+									textArea.value = "";
+								}
+							}
+							textArea.onkeydown = function(e){
+								if(e.keyCode == 13){
+									e.preventDefault();
+								}
+							}
+
+							this.messages.map(function(message){
+								thisChatObject.addMessage(message.content,message.to==username?true:false);
+								messagesBox.scrollTop = messagesBox.scrollHeight;
+							});
+						}else{
+							console.log("removing");
+							this.ref.remove();
+							delete this.ref;
+							this.opened = false;
+						}
 					}
 				},
 				
 				//methods
-				addChatBox: function(title,chatId){
-						element = $(".chatBoxes").append(this.chatBox({title:title}));
-						this.chatObjects[chatId] = new this.ChatObject(title,element);
+				addChatBox: function(title){
+						//inefficient easier to read
+						var element = $(this.chatBox({title:title})).appendTo(".chatBoxes");
+						return element;
 					},
 				addMessage: function(content,isLeft){
 					if(isLeft){
@@ -57,19 +127,76 @@
 				}
 				,
 
-				handleMatches: function(){
+				handleMatches: function(callback){
 					chat.getMatches(function(matches){
 						var matches = JSON.parse(matches.responseText);
 						var identifier;
 						for(var i = 0; i < matches.length; i++){
 							//identifier = matches[i].issue + "+" + username==matches[i].finder?matches[i].found:matches[i].finder;
-							if(chatUi.chatObjects[matches[i]._id] == undefined)
-								chatUi.addChatBox(matches[i].issue,matches[i]._id);
+							var opponent = matches[i].finder == username ? matches[i].found:matches[i].finder;
+							var issue = matches[i].issue;
+							chatUi.addChatObject(issue,opponent,issue+" "+opponent,undefined);
+							if(callback !== undefined)callback();
 						}
+					})
+				},
+				addChatObject: function(issue,opponent,title,elementRef){
+							if(chatUi.chatObjects[issue] == undefined){
+								chatUi.chatObjects[issue] = {};
+							}
+							
+							chatUi.chatObjects[issue][opponent] = new this.ChatObject(title,undefined,issue,opponent);//check naming conflicts after minification
+				},
+				handleMessages: function(callback){
+					//put messages into chatObjects chatObjects
+					chat.getAllMessages(function(messages){
+						var messageArray = JSON.parse(messages.responseText);
+						t = messageArray;
+						
+						messageArray.map(function(message){
+							chatUi.chatObjects[message.issue][username == message.to?message.from:message.to].messages.push(message);
+						});
+						if(callback !== undefined)callback();
+					});
+				},
+				displayMatches:function(){
+					var issueObj;
+					for(issue in this.chatObjects){
+						issueObj = this.chatObjects[issue];//inefficient easier to read
+
+						this.docMatchList.append(this.chatEntry({issue:issue}));
+						
+						for(opponent in issueObj){
+							e = $(this.userEntry({opponent:opponent})).appendTo(this.docMatchList)[0];
+							
+							e.onclick = function(){
+								chatUi.chatObjects[issue][opponent].display();
+							}
+						}
+					};
+				},
+				updateChat:function(){
+					chat.getAllMessages(function(messages){
+						messages = JSON.parse(messages.responseText);
+						messages.map(function(newMessage){
+							if(newMessage.from != username){
+								var chatObj = chatUi.chatObjects[newMessage.issue][newMessage.from];//minification problem here
+								if(!chatObj.opened)chatObj.display();
+								chatObj.messages.push(newMessage);
+								chatObj.addMessage(newMessage.content,true);
+								chatObj.ref.find(".chatMessages")[0].scrollTop = chatObj.ref.find(".chatMessages")[0].scrollHeight;
+							}
+						});
 					})
 				}
 			}
 		})();
+		cObjs = chatUi.chatObjects;
+		chatUi.handleMatches(function(){
+			chatUi.handleMessages(function(){
+				chatUi.displayMatches();
+			});
+		});
 	});
 </script>
 
@@ -93,8 +220,14 @@
 </script>
 
 
-<script class = "userOnlineEntry" type="text/x-handlebars-template">
-	{{issue}} between {{finder}} and {{found}}<br>
+<script class = "chatEntry" type="text/x-handlebars-template">
+	{{issue}} <br>
+</script>
+
+<script class = "userEntry" type="text/x-handlebars-template">
+	<div>
+		user:{{opponent}}<br>
+	</div>
 </script>
 
 <div class = "chatBoxes">
@@ -102,6 +235,6 @@
 
 
 <div class = "usersOnline">
-	hello
+	
 </div>
 

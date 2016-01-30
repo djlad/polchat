@@ -69,7 +69,10 @@ module.exports = function(app,passport,io){
 	}
 
 	function tellUserToCheckForMessages(user){
+		console.log("telling user to check")
+		console.log("telling user to check for new message "+user);
 		for(sock in user2Sock[user]){
+			console.log(user2Sock)
 			io.sockets.connected[sock].emit('newMessage',"nm");
 		}
 	}
@@ -138,7 +141,7 @@ module.exports = function(app,passport,io){
 	app.get("/getAllMessages",function(req,res){
 		urlGetData = url.parse(req.url,true).query;
 
-		Message.find({to:req.user.id,date:{$gt:urlGetData.lastUpdateDate}},function(er,messages){
+		Message.find({$or:[{to:req.user.id},{from:req.user.id}],date:{$gt:urlGetData.lastUpdateDate}},function(er,messages){
 			res.send(messages);
 		});
 	});
@@ -167,13 +170,16 @@ module.exports = function(app,passport,io){
 		if(typeof(req.user) == "undefined"){
 			res.send("nice try");
 		}else{
+			console.log("adding chat listener");
 			socketID = url.parse(req.url,true).query.socketid;
+			console.log(socketID);
 
 			if(typeof(user2Sock[req.user.id]) == "undefined"){
 				user2Sock[req.user.id] = {};
 			}
 			user2Sock[req.user.id][socketID] = socketID;
 			sock2User[socketID] = req.user.id;
+			res.send(socketID);
 		}
 	});
 
